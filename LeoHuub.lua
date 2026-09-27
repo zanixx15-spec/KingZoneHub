@@ -23,7 +23,7 @@ local MainWindow = Rayfield:CreateWindow({
       RememberJoins = true
    },
 
-   KeySystem = false,
+   KeySystem = true,
    KeySettings = {
       Title = "KingZoneHub",
       Subtitle = "Key System",
@@ -31,7 +31,7 @@ local MainWindow = Rayfield:CreateWindow({
       FileName = "Key",
       SaveKey = true,
       GrabKeyFromSite = false,
-      Key = {"Hello,Zero,Hero"}
+      Key = {"TestingFxsksis"}
    }
 })
 
@@ -112,7 +112,7 @@ MainTab:CreateToggle({
       local Camera = workspace.CurrentCamera
 
       local FOV = 150
-      local Smoothness = 0.3
+      local Smoothness = 0.25
 
       local function GetTarget()
          local closest
@@ -228,3 +228,54 @@ SettingTab:CreateToggle({
       end
    end,
 })
+
+---invisible toggle
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Invisibility နဲ့ Name Tag ကို ထိန်းချုပ်မယ့် function
+local function setInvisibility(isInvisible)
+	local character = LocalPlayer.Character
+	if not character then return end
+
+	local targetTransparency = isInvisible and 1 or 0
+
+	-- ၁။ Character ခန္ဓာကိုယ်နဲ့ Accessory များကို Invisible/Visible လုပ်ခြင်း
+	for _, descendant in ipairs(character:GetDescendants()) do
+		if descendant:IsA("BasePart") then
+			if descendant.Name ~= "HumanoidRootPart" then
+				descendant.Transparency = targetTransparency
+			end
+		elseif descendant:IsA("Decal") then
+			descendant.Transparency = targetTransparency
+		end
+	end
+
+	-- ၂။ ခေါင်းပေါ်က Display Name (Name Tag) ကို ကွယ်ခြင်း/ဖော်ခြင်း
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	if humanoid then
+		if isInvisible then
+			humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+		else
+			humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.Viewer
+		end
+	end
+end
+
+-- UI Toggle
+local Toggle = SettingTab:CreateToggle({
+	Name = "Invisible",
+	CurrentValue = false,
+	Flag = "Toggle4",
+	Callback = function(Value)
+		setInvisibility(Value)
+	end,
+})
+
+-- Player သေပြီး ပြန်ယှဉ်လာပါက (Respawn) Toggle အခြေအနေအတိုင်း စစ်ပေးရန်
+LocalPlayer.CharacterAdded:Connect(function(character)
+	task.wait(0.5) -- Character လုံးဝ load ဖြစ်အောင် ခဏစောင့်မည်
+	if Toggle.CurrentValue then
+		setInvisibility(true)
+	end
+end)
